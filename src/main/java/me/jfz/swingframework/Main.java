@@ -1,26 +1,27 @@
 package me.jfz.swingframework;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.extras.FlatSVGUtils;
+import com.formdev.flatlaf.extras.components.FlatButton;
 
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.net.URL;
 
+import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
-
-import sun.misc.Launcher;
 
 /**
  * 描述
@@ -41,9 +42,12 @@ public class Main {
             jf.setSize(640, 480);
             jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             jf.setLocationRelativeTo(null);
-            // jf.setIconImages(FlatSVGUtils.createWindowIconImages("FlatLaf.svg"));
+            jf.setIconImages(FlatSVGUtils.createWindowIconImages("/logo.svg"));
 
+            // 菜单栏
             JMenuBar menuBar1 = new JMenuBar();
+
+            // 菜单栏中菜单项
             JMenu fileMenu = new JMenu();
             fileMenu.setText("File");
             fileMenu.setMnemonic('F');
@@ -51,12 +55,22 @@ public class Main {
             JMenuItem openMenuItem = new JMenuItem("345");
             fileMenu.add(newMenuItem);
             fileMenu.add(openMenuItem);
-
-            JMenu optionsMenu= new JMenu();
+            JMenu optionsMenu = new JMenu();
             optionsMenu.setText("Options");
             optionsMenu.setMnemonic('O');
             menuBar1.add(fileMenu);
             menuBar1.add(optionsMenu);
+
+            // 菜单栏增加用户按钮 靠右
+            FlatButton usersButton = new FlatButton();
+            usersButton.setIcon(new FlatSVGIcon("/users.svg"));
+            usersButton.setButtonType(FlatButton.ButtonType.toolBarButton);
+            usersButton.setFocusable(false);
+            usersButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Hello User! How are you?", "User",
+                JOptionPane.INFORMATION_MESSAGE));
+            menuBar1.add(Box.createGlue());
+            menuBar1.add(usersButton);
+
             jf.setJMenuBar(menuBar1);
 
             // 创建选项卡面板
