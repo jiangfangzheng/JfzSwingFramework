@@ -1,16 +1,27 @@
 package me.jfz.swingframework;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.extras.FlatSVGUtils;
 import com.formdev.flatlaf.extras.components.FlatButton;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,6 +43,7 @@ import javax.swing.WindowConstants;
  * @since 2022/4/24 0024
  */
 public class Main {
+     private static JComboBox<String> lookAndFeelComboBox;
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -111,6 +123,13 @@ public class Main {
         JMenuItem themeMenuItem = new JMenuItem();
         themeMenuItem.setText("主题");
         themeMenuItem.setMnemonic('T');
+        themeMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 点击按钮, 显示新的一个窗口
+                showThemeWindow(jf);
+            }
+        });
         optionsMenu.add(themeMenuItem);
         // 设置-插件
         JMenuItem pluginsMenuItem = new JMenuItem();
@@ -184,4 +203,88 @@ public class Main {
         panel.add(label);
         return panel;
     }
+
+    public static void showThemeWindow(JFrame relativeWindow) {
+        // 创建一个新窗口
+        JFrame newJFrame = new JFrame("主题设置");
+        newJFrame.setSize(250, 250);
+        // 把新窗口的位置设置到 relativeWindow 窗口的中心
+        newJFrame.setLocationRelativeTo(relativeWindow);
+        // 点击窗口关闭按钮, 执行销毁窗口操作（如果设置为 EXIT_ON_CLOSE, 则点击新窗口关闭按钮后, 整个进程将结束）
+        newJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        // 窗口设置为不可改变大小
+        newJFrame.setResizable(false);
+        JPanel panel = new JPanel(new GridLayout(1, 1));
+        // 在新窗口中显示一个标签
+        JLabel label = new JLabel("这是一个窗口");
+
+        label.setFont(new Font(null, Font.PLAIN, 25));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.TOP);
+        panel.add(label);
+
+        // 需要选择的条目
+        String[] listData = new String[]{FlatLightLaf.class.getName(),
+            FlatDarkLaf.class.getName(),
+            FlatIntelliJLaf.class.getName(),
+            FlatDarculaLaf.class.getName(),
+            "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"};
+
+        // 创建一个下拉列表框
+        lookAndFeelComboBox = new JComboBox<String>(listData);
+
+        // 添加条目选中状态改变的监听器
+        lookAndFeelComboBox.addItemListener(e1 -> {
+            // 只处理选中的状态
+            if (e1.getStateChange() == ItemEvent.SELECTED) {
+                System.out.println("选中: " + lookAndFeelComboBox.getSelectedIndex() + " = " + lookAndFeelComboBox.getSelectedItem());
+                // 修改主题事件
+                lookAndFeelComboBox.addActionListener(e2 -> lookAndFeelChanged(lookAndFeelComboBox.getSelectedItem()));
+            }
+        });
+        // 设置默认选中的条目
+        lookAndFeelComboBox.setSelectedIndex(0);
+        panel.add(lookAndFeelComboBox);
+
+        newJFrame.setContentPane(panel);
+        newJFrame.setVisible(true);
+    }
+
+    // 修改主题事件
+    private static void lookAndFeelChanged(Object aaa) {
+        String lafClassName = (String) aaa;
+        if( lafClassName == null )
+            return;
+
+        if( lafClassName.equals( UIManager.getLookAndFeel().getClass().getName() ) )
+            return;
+
+        EventQueue.invokeLater( () -> {
+            try {
+                FlatAnimatedLafChange.showSnapshot();
+
+                // change look and feel
+                UIManager.setLookAndFeel( lafClassName );
+
+                // clear custom default font when switching to non-FlatLaf LaF
+                if( !(UIManager.getLookAndFeel() instanceof FlatLaf) )
+                    UIManager.put( "defaultFont", null );
+
+                // update all components
+                FlatLaf.updateUI();
+                FlatAnimatedLafChange.hideSnapshotWithAnimation();
+
+                // increase size of frame if necessary
+                // int width = frame.getWidth();
+                // int height = frame.getHeight();
+                // Dimension prefSize = frame.getPreferredSize();
+                // if( prefSize.width > width || prefSize.height > height )
+                //     frame.setSize( Math.max( prefSize.width, width ), Math.max( prefSize.height, height ) );
+
+            } catch( Exception ex ) {
+                // LoggingFacade.INSTANCE.logSevere( null, ex );
+            }
+        } );
+    }
 }
+
